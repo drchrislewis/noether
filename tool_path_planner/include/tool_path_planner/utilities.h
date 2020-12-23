@@ -118,6 +118,12 @@ static std::string getClassName()
   return (status == 0) ? res.get() : mangled_name;
 }
 
+bool getCuttingPlane(const shape_msgs::Mesh& mesh, const double raster_angle, Eigen::Vector3d& N, double &D);
+bool getCellCentroidData(vtkSmartPointer<vtkPolyData> mesh, int id, Eigen::Vector3d& center, Eigen::Vector3d& norm, double& area);
+  
 }  // namespace tool_path_planner
+
+
+
 
 #endif /* INCLUDE_TOOL_PATH_PLANNER_UTILITIES_H_ */

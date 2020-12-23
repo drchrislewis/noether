@@ -277,4 +277,100 @@ bool createToolPathSegment(const pcl::PointCloud<pcl::PointNormal>& cloud_normal
   return true;
 }
 
+bool getCuttingPlane(const vtkSmartPointer<vtkPolyData> mesh, const double raster_angle, Eigen::Vector3d& N, double &D)
+{
+  // TODO put this in its own function
+  // find center of mass of mesh
+  Eigen::Vector3d C;
+  double A;
+  std::vector<Eigen::Vector3d> centers;
+  std::vector<double> areas;
+  for(int i = 0; i< mesh->GetNumberOfCells(); i++)
+    {
+      Eigen::Vector3d Ci;
+      Eigen::Vector3d Ni;
+      double Ai;
+      getCellCentroidData(mesh, i, Ci, Ni, Ai);
+      C += Ci*Ai;
+      A += Ai;
+      centers.push_back(Ci);
+      areas.push_back(Ai);
+    }
+  C = C/A;
+  Eigen::Matrix<double, 3, 3> Inertia;
+  for(int i = 0; i< mesh.triangles.size(); i++)
+    {
+      double xk = centers[i].x() - C.x();
+      double yk = centers[i].y() - C.y();
+      double zk = centers[i].z() - C.z();
+      Inertia(0,0) += areas[i] * (yk*yk + zk*zk);
+      Inertia(1,1) += areas[i] * (xk*xk + zk*zk);
+      Inertia(2,2) += areas[i] * (xk*xk + yk*yk);
+      Inertia(0,1) -= areas[i] * xk*yk;
+      Inertia(0,2) -= areas[i] * xk*zk;
+      Inertia(1,2) -= areas[i] * yk*zk;
+    }
+  Inertia(1,0) = Inertia(0,1);
+  Inertia(2,0) = Inertia(0,2);
+  Inertia(2,1) = Inertia(2,1);
+  Eigen::JacobiSVD<Eigen::Matrix3d> SVD(Inertia, Eigen::ComputeFullU | Eigen::ComputeFullV);
+  Eigen::MatrixXd U = SVD.matrixU();
+  
+  // These two axes and the center defines the plane
+  Eigen::Vector3d max_axis(U(0,0),U(1,0),U(2,0));
+  Eigen::Vector3d mid_axis(U(0,1),U(1,1),U(2,1));
+  Eigen::Vector3d min_axis(U(0,2),U(1,2),U(2,2));
+  if(DEBUG_CUT_AXIS)
+    {
+      printf("Max_axis %lf %lf %lf\n",max_axis[0],max_axis[1],max_axis[2]);
+      printf("Mid_axis %lf %lf %lf\n",mid_axis[0],mid_axis[1],mid_axis[2]);
+      printf("Min_axis %lf %lf %lf\n",min_axis[0],min_axis[1],min_axis[2]);
+      printf("raster angle = %lf\n",raster_angle);
+    }
+      Eigen::Quaterniond rot(Eigen::AngleAxisd(raster_angle, min_axis));
+      rot.normalize();
+      
+      N = rot.toRotationMatrix()*mid_axis;
+
+      // equation of a plane through a center point with a given normal is
+      // nx(X-cx) + ny(Y-cy) + nz(Z-cz) =0
+      // nxX + nyY + nzZ = nxcx + nycy + nzcz = d where d = nxcx + nycy + nzcz
+      // Distance from point to plan D = nxX + nyY + nzZ -d
+      D = N.x()*C.x() + N.y()*C.y() + N.z()*C.z();
+      if(DEBUG_CUT_AXIS)
+	printf("Plane equation %6.3lfx %6.3lfy %6.3lfz = %6.3lf\n",N[0],N[1],N[2],D);
+
+}
+bool getCellCentroidData(vtkSmartPointer<vtkPolyData> mesh, int id, Eigen::Vector3d& center, Eigen::Vector3d& norm, double& area)
+{
+  vtkCell* cell = mesh->GetCell(id);
+  if (cell)
+  {
+    vtkTriangle* triangle = dynamic_cast<vtkTriangle*>(cell);
+    double p0[3];
+    double p1[3];
+    double p2[3];
+
+    triangle->GetPoints()->GetPoint(0, p0);
+    triangle->GetPoints()->GetPoint(1, p1);
+    triangle->GetPoints()->GetPoint(2, p2);
+    triangle->TriangleCenter(p0, p1, p2, center);
+    area = vtkTriangle::TriangleArea(p0, p1, p2);
+
+    double* n = mesh->GetCellData()->GetNormals()->GetTuple(id);
+    if (n)
+    {
+      norm[0] = n[0];
+      norm[1] = n[1];
+      norm[2] = n[2];
+    }
+
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
 }  // namespace tool_path_planner
