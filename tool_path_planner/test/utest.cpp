@@ -288,7 +288,7 @@ void runExtraRasterTest(tool_path_planner::PathGenerator& planner,
   vtkSmartPointer<vtkPoints> seg_start_points_no = vtkSmartPointer<vtkPoints>::New();
   vtkSmartPointer<vtkPoints> seg_start_points_ex = vtkSmartPointer<vtkPoints>::New();
   double pt[3];
-  
+
   for (tool_path_planner::ToolPath path : *paths_no_extras)
   {
     for (tool_path_planner::ToolPathSegment seg : path)
@@ -296,17 +296,17 @@ void runExtraRasterTest(tool_path_planner::PathGenerator& planner,
       double average_point_spacing = 0.;
       int n_pts = 0;
       Eigen::Isometry3d prev_waypoint = seg[0];
-      int q=0;
+      int q = 0;
       for (Eigen::Isometry3d waypoint : seg)
       {
-	if(q==0)
-	  {
-	    pt[0] = waypoint.translation().x();
-	    pt[1] = waypoint.translation().y();
-	    pt[2] = waypoint.translation().z();
-	    seg_start_points_no->InsertNextPoint(pt);
-	    q++;
-	  }
+        if (q == 0)
+        {
+          pt[0] = waypoint.translation().x();
+          pt[1] = waypoint.translation().y();
+          pt[2] = waypoint.translation().z();
+          seg_start_points_no->InsertNextPoint(pt);
+          q++;
+        }
         Eigen::Vector3d v = waypoint.translation() - prev_waypoint.translation();
         average_point_spacing += sqrt(v.x() * v.x() + v.y() * v.y() + v.z() * v.z());
         prev_waypoint = waypoint;
@@ -324,17 +324,17 @@ void runExtraRasterTest(tool_path_planner::PathGenerator& planner,
       double average_point_spacing = 0.;
       int n_pts = 0;
       Eigen::Isometry3d prev_waypoint = seg[0];
-      int q=0;
+      int q = 0;
       for (Eigen::Isometry3d waypoint : seg)
       {
-	if(q==0)
-	  {
-	    pt[0] = waypoint.translation().x();
-	    pt[1] = waypoint.translation().y();
-	    pt[2] = waypoint.translation().z();
-	    seg_start_points_ex->InsertNextPoint(pt);
-	    q++;
-	  }
+        if (q == 0)
+        {
+          pt[0] = waypoint.translation().x();
+          pt[1] = waypoint.translation().y();
+          pt[2] = waypoint.translation().z();
+          seg_start_points_ex->InsertNextPoint(pt);
+          q++;
+        }
 
         Eigen::Vector3d v = waypoint.translation() - prev_waypoint.translation();
         double dist = sqrt(v.x() * v.x() + v.y() * v.y() + v.z() * v.z());
@@ -408,7 +408,7 @@ void runExtraRasterTest(tool_path_planner::PathGenerator& planner,
   }
 
   viz.renderDisplay();
-  //void VTKViewer::addPointDataDisplay(vtkPoints* points, const std::vector<float>& color)
+  // void VTKViewer::addPointDataDisplay(vtkPoints* points, const std::vector<float>& color)
   // Display results with extra rasters
   tool_path_planner::ToolPathsData paths_with_extras_data = tool_path_planner::toToolPathsData(paths_with_extras.get());
   for (std::size_t i = 0; i < paths_with_extras_data.size(); ++i)
@@ -438,7 +438,8 @@ void runExtraRasterTest(tool_path_planner::PathGenerator& planner,
 }
 
 void runSegmentByAxesTest(const tool_path_planner::ToolPathSegment& tool_path_segment,
-                          const Eigen::Vector3f& axis_1, const Eigen::Vector3f& axis_2)
+                          const Eigen::Vector3f& axis_1,
+                          const Eigen::Vector3f& axis_2)
 {
   vtk_viewer::VTKViewer viz;
   tool_path_planner::ToolPath tool_path = tool_path_planner::splitByAxes(tool_path_segment, axis_1, axis_2);
@@ -447,10 +448,10 @@ void runSegmentByAxesTest(const tool_path_planner::ToolPathSegment& tool_path_se
   double scale = 1.0;
 
   std::vector<std::vector<float>> colors = {
-    {1, 0, 0},
-    {0, 1, 0},
-    {0, 0, 1},
-    {1, 1, 0},
+    { 1, 0, 0 },
+    { 0, 1, 0 },
+    { 0, 0, 1 },
+    { 1, 1, 0 },
   };
 
   // Display surface normals
@@ -497,9 +498,7 @@ tool_path_planner::ToolPathSegment toSegment(std::vector<Eigen::Vector3d> points
  * @param angle_inc Increment degree for generated points around the circle
  * @return Points of circle
  */
-std::vector<Eigen::Vector3d> getCircle(
-    double radius = 1.0,
-    double angle_inc = DEG2RAD(5))
+std::vector<Eigen::Vector3d> getCircle(double radius = 1.0, double angle_inc = DEG2RAD(5))
 {
   std::vector<Eigen::Vector3d> points;
 
@@ -564,9 +563,7 @@ std::vector<Eigen::Vector3d> getCircle(
  * @param inc Increment length for interpolated points
  * @return Points of polygon
  */
-std::vector<Eigen::Vector3d> getPolygon(
-    std::vector<Eigen::Vector3d> vertices,
-    double inc = 0.05)
+std::vector<Eigen::Vector3d> getPolygon(std::vector<Eigen::Vector3d> vertices, double inc = 0.05)
 {
   std::vector<Eigen::Vector3d> points;
   for (std::size_t point_index = 0; point_index < vertices.size(); ++point_index)
@@ -574,21 +571,17 @@ std::vector<Eigen::Vector3d> getPolygon(
     double x1 = vertices[point_index].x();
     double y1 = vertices[point_index].y();
     double z1 = vertices[point_index].z();
-    double x2 = vertices[(point_index+1)%vertices.size()].x();
-    double y2 = vertices[(point_index+1)%vertices.size()].y();
-    double z2 = vertices[(point_index+1)%vertices.size()].z();
+    double x2 = vertices[(point_index + 1) % vertices.size()].x();
+    double y2 = vertices[(point_index + 1) % vertices.size()].y();
+    double z2 = vertices[(point_index + 1) % vertices.size()].z();
     double dist = std::sqrt(std::pow(x1 - x2, 2) + std::pow(y1 - y2, 2) + std::pow(z1 - z2, 2));
     int n = int(std::round(dist / inc));
-    double x_inc = (x2 - x1)/n;
-    double y_inc = (y2 - y1)/n;
-    double z_inc = (z2 - z1)/n;
+    double x_inc = (x2 - x1) / n;
+    double y_inc = (y2 - y1) / n;
+    double z_inc = (z2 - z1) / n;
     for (int i = 0; i < n; ++i)
     {
-      Eigen::Vector3d point(
-        x1 + (i * x_inc),
-        y1 + (i * y_inc),
-        z1 + (i * z_inc)
-      );
+      Eigen::Vector3d point(x1 + (i * x_inc), y1 + (i * y_inc), z1 + (i * z_inc));
       points.push_back(point);
     }
   }
@@ -601,20 +594,13 @@ std::vector<Eigen::Vector3d> getPolygon(
  * @param width Width of rectangle
  * @return Points of rectangle
  */
-std::vector<Eigen::Vector3d> getRectangle(
-    double length=1.0,
-    double width=2.0,
-    double inc=0.05)
+std::vector<Eigen::Vector3d> getRectangle(double length = 1.0, double width = 2.0, double inc = 0.05)
 {
-  return getPolygon(
-    {
-      Eigen::Vector3d(-length/2, -width/2, 0),
-      Eigen::Vector3d(-length/2,  width/2, 0),
-      Eigen::Vector3d( length/2,  width/2, 0),
-      Eigen::Vector3d( length/2, -width/2, 0)
-    },
-    inc
-  );
+  return getPolygon({ Eigen::Vector3d(-length / 2, -width / 2, 0),
+                      Eigen::Vector3d(-length / 2, width / 2, 0),
+                      Eigen::Vector3d(length / 2, width / 2, 0),
+                      Eigen::Vector3d(length / 2, -width / 2, 0) },
+                    inc);
 }
 
 /**
@@ -623,9 +609,7 @@ std::vector<Eigen::Vector3d> getRectangle(
  * @param plane_coeff Coefficients of homogeneous plane equation: <A, B, C> for 0 = Ax + By + Cz
  * @return Projected points
  */
-std::vector<Eigen::Vector3d> projectZToPlane(
-    std::vector<Eigen::Vector3d> points_in,
-    Eigen::Vector3d plane_coeff)
+std::vector<Eigen::Vector3d> projectZToPlane(std::vector<Eigen::Vector3d> points_in, Eigen::Vector3d plane_coeff)
 {
   std::vector<Eigen::Vector3d> points_out;
   for (auto p : points_in)
@@ -633,7 +617,7 @@ std::vector<Eigen::Vector3d> projectZToPlane(
     double x = plane_coeff.x();
     double y = plane_coeff.y();
     // Project z value onto plane  -->  z = (-Ax - By) / C
-    p.z() = (-1*x*p.x() + -1*y*p.y())/p.z();
+    p.z() = (-1 * x * p.x() + -1 * y * p.y()) / p.z();
     points_out.push_back(p);
   }
   return points_out;
